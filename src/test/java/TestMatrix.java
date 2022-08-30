@@ -2,6 +2,7 @@ import annotations.GeneratorProperty;
 import annotations.MatrixProperties;
 import annotations.MatrixProperty;
 import main.GeneratorTypes;
+import random.Generator;
 import random.Matrix;
 
 import java.lang.reflect.Method;
@@ -30,13 +31,15 @@ public class TestMatrix {
             long btime = System.nanoTime();
             ExecutorService executor = Executors.newFixedThreadPool(2);
             for (MatrixProperty matrixProperty : matrixProperties.value()) {
-                executor.execute(new GeneratorThread(matrixProperty, method, object));
-//                try {
-//                    Generator<?> generator = matrixProperty.generator().value().getGenerator();
-//                    method.invoke(object, new Matrix<>(generator, matrixProperty.rows(), matrixProperty.column()));
-//                } catch (Exception e) {
-//                    System.err.println(e.getMessage());
-//                }
+                //executor.execute(new GeneratorThread(matrixProperty, method, object));
+                executor.execute(() -> {
+                    try {
+                        Generator<?> generator = matrixProperty.generator().value().getGenerator();
+                        method.invoke(object, new Matrix<>(generator, matrixProperty.rows(), matrixProperty.column()));
+                    } catch (Exception e) {
+                        System.err.println(e.getMessage());
+                    }
+                });
             }
             executor.shutdown();
             System.out.println("Time is " + (System.nanoTime() - btime));
